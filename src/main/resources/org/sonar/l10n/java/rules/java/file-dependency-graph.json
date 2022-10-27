@@ -1,0 +1,16 @@
+{
+  "title": "A rule that collects information about dependencies between files by looking at import statements and type declarations.",
+  "type": "Bug",
+  "status": "ready",
+  "tags": [
+    "bugs",
+    "gandalf",
+    "magic"
+  ],
+  "scope": "All",
+  "remediation": {
+    "func": "Constant\/Issue",
+    "constantCost": "0min"
+  },
+  "defaultSeverity": "Critical"
+}
