@@ -24,9 +24,19 @@ import java.util.stream.Collectors;
 
 @Rule(key = "file-dependency-graph")
 public class GraphDependencyRule extends IssuableSubscriptionVisitor implements EndOfAnalysis {
-    private static final List<File> files = new ArrayList<>();
     private static final String FILE_FORMAT = "%s.json";
     private static final String GRAPH_FORMAT = "%s-graph.json";
+
+    private final Path outputFolder;
+    private final List<File> files = new ArrayList<>();
+
+    GraphDependencyRule() {
+        this.outputFolder = Path.of(".");
+    }
+
+    GraphDependencyRule(Path outputFolder) {
+        this.outputFolder = outputFolder;
+    }
 
     @Override
     public boolean scanWithoutParsing(InputFileScannerContext inputFileScannerContext) {
@@ -35,6 +45,10 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
             return true;
         }
         return false;
+    }
+
+    public Path getOutputFolder() {
+        return outputFolder;
     }
 
     @Override
@@ -59,12 +73,8 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
 
     @Override
     public void endOfAnalysis(ModuleScannerContext context) {
-        Path path = computePathToModuleGraph(context);
+        Path path = computePathToModuleGraph();
         writeFilesToDisk(path, files);
-    }
-
-    public static List<File> getFiles() {
-        return Collections.unmodifiableList(files);
     }
 
     public static Path writeFilesToDisk(Path path, List<File> files) {
@@ -125,11 +135,12 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
         String key = FILE_FORMAT.format(inputFileScannerContext.getInputFile().key());
         return Path.of(key);
     }
-    private static Path computePathToModuleGraph(ModuleScannerContext context) {
+
+    public Path computePathToModuleGraph() {
         String moduleKey = context.getModuleKey();
         if (moduleKey.isEmpty()) {
             moduleKey = "module";
         }
-        return Paths.get(String.format(GRAPH_FORMAT, moduleKey));
+        return outputFolder.resolve(String.format(GRAPH_FORMAT, moduleKey));
     }
 }

@@ -7,22 +7,25 @@
  */
 package com.burihabwa.source.checks;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.sonar.java.checks.verifier.internal.InternalCheckVerifier;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GraphDependencyRuleTest {
+    @TempDir
+    Path tempDir;
 
     @Test
-    void test() {
-        GraphDependencyRule check = new GraphDependencyRule();
+    void test() throws IOException {
+        GraphDependencyRule check = new GraphDependencyRule(tempDir);
         InternalCheckVerifier.newInstance()
                 .onFiles(
                         "src/main/java/com/burihabwa/source/graph/File.java",
@@ -30,22 +33,27 @@ class GraphDependencyRuleTest {
                         "src/test/resources/simple/Simple.java"
                 ).withCheck(check)
                 .verifyNoIssues();
-        //check.writeFilesToDisk(Paths.get("boom.json"), GraphDependencyRule.getFiles());
+        String actual, expected;
+        try (InputStream actualIn = new FileInputStream(check.computePathToModuleGraph().toFile());
+             InputStream expectedIn = new FileInputStream("src/test/resources/simple/module-graph.json")) {
+            actual = new String(actualIn.readAllBytes(), Charset.defaultCharset());
+            expected = new String(expectedIn.readAllBytes(), Charset.defaultCharset());
+        }
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void static_functions_are_saved() throws IOException {
-        GraphDependencyRule check = new GraphDependencyRule();
+        GraphDependencyRule check = new GraphDependencyRule(Path.of(tempDir.toString()));
         InternalCheckVerifier.newInstance()
                 .onFiles(
                         "src/test/resources/static-imports/Consumer.java",
                         "src/test/resources/static-imports/Producer.java"
                 ).withCheck(check)
                 .verifyNoIssues();
-        Gson gson = new Gson();
 
         String actual, expected;
-        try (InputStream actualIn = new FileInputStream("module-graph.json");
+        try (InputStream actualIn = new FileInputStream(check.computePathToModuleGraph().toFile());
              InputStream expectedIn = new FileInputStream("src/test/resources/static-imports/module-graph.json")) {
             actual = new String(actualIn.readAllBytes(), Charset.defaultCharset());
             expected = new String(expectedIn.readAllBytes(), Charset.defaultCharset());
