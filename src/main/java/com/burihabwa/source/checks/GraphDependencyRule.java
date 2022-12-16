@@ -16,6 +16,7 @@ import org.sonar.plugins.java.api.internal.EndOfAnalysis;
 import org.sonar.plugins.java.api.tree.*;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -24,9 +25,15 @@ import java.util.stream.Collectors;
 @Rule(key = "file-dependency-graph")
 public class GraphDependencyRule extends IssuableSubscriptionVisitor implements EndOfAnalysis {
     private static final List<File> files = new ArrayList<>();
+    private static final String FILE_FORMAT = "%s.json";
+    private static final String GRAPH_FORMAT = "%s-graph.json";
 
     @Override
     public boolean scanWithoutParsing(InputFileScannerContext inputFileScannerContext) {
+        Path path = computePathToFileGraph(inputFileScannerContext);
+        if (Files.exists(path)) {
+            return true;
+        }
         return false;
     }
 
@@ -52,7 +59,7 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
 
     @Override
     public void endOfAnalysis(ModuleScannerContext context) {
-        Path path = Paths.get(String.format("%s-graph.json", context.getModuleKey()));
+        Path path = computePathToModuleGraph(context);
         writeFilesToDisk(path, files);
     }
 
@@ -112,5 +119,17 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
             classes.add(fqdn);
             super.visitClass(tree);
         }
+    }
+
+    private static Path computePathToFileGraph(InputFileScannerContext inputFileScannerContext) {
+        String key = FILE_FORMAT.format(inputFileScannerContext.getInputFile().key());
+        return Path.of(key);
+    }
+    private static Path computePathToModuleGraph(ModuleScannerContext context) {
+        String moduleKey = context.getModuleKey();
+        if (moduleKey.isEmpty()) {
+            moduleKey = "module";
+        }
+        return Paths.get(String.format(GRAPH_FORMAT, moduleKey));
     }
 }
