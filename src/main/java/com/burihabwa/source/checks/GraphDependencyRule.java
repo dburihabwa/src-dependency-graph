@@ -15,11 +15,17 @@ import org.sonar.plugins.java.api.ModuleScannerContext;
 import org.sonar.plugins.java.api.internal.EndOfAnalysis;
 import org.sonar.plugins.java.api.tree.*;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Rule(key = "file-dependency-graph")
@@ -40,11 +46,7 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
 
     @Override
     public boolean scanWithoutParsing(InputFileScannerContext inputFileScannerContext) {
-        Path path = computePathToFileGraph(inputFileScannerContext);
-        if (Files.exists(path)) {
-            return true;
-        }
-        return false;
+        return Files.exists(computePathToFileGraph(inputFileScannerContext));
     }
 
     public Path getOutputFolder() {
@@ -80,19 +82,9 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
     public static Path writeFilesToDisk(Path path, List<File> files) {
         try (
                 OutputStream out = new FileOutputStream(path.toFile());
-                PrintWriter writer = new PrintWriter(out)
         ) {
-            writer.write("{\n\t\"files\": [\n");
-            int indexOfLastElement = files.size() - 1;
-            if (indexOfLastElement >= 0) {
-                for (int i = 0; i < indexOfLastElement; i++) {
-                    writer.write("\t\t" + files.get(i) + ",\n");
-                }
-                writer.write("\t\t" + files.get(indexOfLastElement) + "\n");
-            }
-            writer.write("\t]\n}\n");
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            var moduleGraph = new com.burihabwa.source.graph.Files(files).toString();
+            out.write(moduleGraph.getBytes(Charset.defaultCharset()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

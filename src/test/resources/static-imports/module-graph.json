@@ -1,6 +1,1 @@
-{
-	"files": [
-		{ "path": ":src/test/resources/static-imports/Consumer.java", "classes": ["org.example.Consumer"], "imports": ["org.example.Producer.DEFAULT_VALUE", "org.example.Producer.getAGreaterNumber", "org.example.Producer.getANumber"] },
-		{ "path": ":src/test/resources/static-imports/Producer.java", "classes": ["org.example.Producer"], "imports": [] }
-	]
-}
+{"files":[{"path":":src/test/resources/static-imports/Consumer.java","classes":["org.example.Consumer"],"imports":["org.example.Producer.DEFAULT_VALUE","org.example.Producer.getAGreaterNumber","org.example.Producer.getANumber"]},{"path":":src/test/resources/static-imports/Producer.java","classes":["org.example.Producer"],"imports":[]}]}
