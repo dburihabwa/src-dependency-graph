@@ -27,11 +27,8 @@ class GraphDependencyRuleTest {
     void test() throws IOException {
         GraphDependencyRule check = new GraphDependencyRule(tempDir);
         InternalCheckVerifier.newInstance()
-                .onFiles(
-                        "src/main/java/com/burihabwa/source/graph/SourceFile.java",
-                        "src/main/java/com/burihabwa/source/checks/GraphDependencyRule.java",
-                        "src/test/resources/simple/Simple.java"
-                ).withCheck(check)
+                .onFile("src/test/resources/simple/Simple.java")
+                .withCheck(check)
                 .verifyNoIssues();
         String actual, expected;
         try (InputStream actualIn = new FileInputStream(check.computePathToModuleGraph().toFile());
