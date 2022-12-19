@@ -1,1 +1,1 @@
-{"files":[{"path":":src/test/resources/simple/Simple.java","classes":["org.example.Message"],"imports":["java.util.List"]}]}
+{"files":[{"path":"src/test/resources/simple/Simple.java","classes":["org.example.Message"],"imports":["java.util.List"]}]}

@@ -64,7 +64,7 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
         CompilationUnitTree cut = (CompilationUnitTree) tree;
         CutVisitor visitor = new CutVisitor();
         tree.accept(visitor);
-        Path path = Paths.get(context.getInputFile().key());
+        Path path = Paths.get(context.getInputFile().path().toString());
         List<String> imports = cut.imports().stream()
                 .filter(ImportTree.class::isInstance)
                 .map(clause -> ((ImportTree) clause).qualifiedIdentifier())
