@@ -7,7 +7,8 @@
  */
 package com.burihabwa.source.checks;
 
-import com.burihabwa.source.graph.File;
+import com.burihabwa.source.graph.Module;
+import com.burihabwa.source.graph.SourceFile;
 import org.sonar.check.Rule;
 import org.sonar.plugins.java.api.InputFileScannerContext;
 import org.sonar.plugins.java.api.IssuableSubscriptionVisitor;
@@ -34,7 +35,7 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
     private static final String GRAPH_FORMAT = "%s-graph.json";
 
     private final Path outputFolder;
-    private final List<File> files = new ArrayList<>();
+    private final List<SourceFile> files = new ArrayList<>();
 
     GraphDependencyRule() {
         this.outputFolder = Path.of(".");
@@ -69,7 +70,7 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
                 .map(clause -> ((ImportTree) clause).qualifiedIdentifier())
                 .map(GraphDependencyRule::concatenate)
                 .collect(Collectors.toList());
-        files.add(new File(path, visitor.classes, imports));
+        files.add(new SourceFile(path, visitor.classes, imports));
     }
 
 
@@ -79,11 +80,11 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
         writeFilesToDisk(path, files);
     }
 
-    public static Path writeFilesToDisk(Path path, List<File> files) {
+    public static Path writeFilesToDisk(Path path, List<SourceFile> files) {
         try (
                 OutputStream out = new FileOutputStream(path.toFile());
         ) {
-            var moduleGraph = new com.burihabwa.source.graph.Files(files).toString();
+            var moduleGraph = new Module(files).toString();
             out.write(moduleGraph.getBytes(Charset.defaultCharset()));
         } catch (IOException e) {
             throw new RuntimeException(e);

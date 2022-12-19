@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.sonar.plugins.java.api.CheckRegistrar;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MyJavaFileCheckRegistrarTest {
+class MyJavaSourceFileCheckRegistrarTest {
 
   @Test
   void checkNumberRules() {

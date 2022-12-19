@@ -14,17 +14,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Files {
-    private List<File> sourceFiles;
+public class Module {
+    private List<SourceFile> sourceFiles;
 
-    public Files(List<File> sourceFiles) {
+    public Module(List<SourceFile> sourceFiles) {
         this.sourceFiles = Collections.unmodifiableList(sourceFiles);
     }
 
-    public static Files of(Path graph) throws IOException {
+    public static Module of(Path graph) throws IOException {
         Gson gson = new Gson();
         JsonObject object;
-        List<File> convertedFiles = new ArrayList<>();
+        List<SourceFile> convertedSourceFiles = new ArrayList<>();
         try (FileReader reader = new FileReader(graph.toFile())) {
             object = gson.fromJson(reader, JsonObject.class);
         }
@@ -33,16 +33,16 @@ public class Files {
             Path path = Path.of(element.getAsJsonObject().get("path").getAsString());
             List<String> classes = parseStringArray(element.getAsJsonObject().get("classes").getAsJsonArray());
             List<String> imports = parseStringArray(element.getAsJsonObject().get("imports").getAsJsonArray());
-            File file = new File(path, classes, imports);
-            convertedFiles.add(file);
+            SourceFile file = new SourceFile(path, classes, imports);
+            convertedSourceFiles.add(file);
         });
-        return new Files(convertedFiles);
+        return new Module(convertedSourceFiles);
     }
 
     @Override
     public String toString() {
         GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(Files.class, new FilesSerializer());
+        builder.registerTypeAdapter(Module.class, new ModuleSerializer());
         return builder.create().toJson(this);
     }
 
@@ -54,19 +54,19 @@ public class Files {
         return tokens;
     }
 
-    private static class FilesSerializer implements JsonSerializer<Files> {
+    private static class ModuleSerializer implements JsonSerializer<Module> {
         @Override
-        public JsonElement serialize(Files files, Type type, JsonSerializationContext jsonSerializationContext) {
+        public JsonElement serialize(Module module, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonObject object = new JsonObject();
-            JsonArray array = new JsonArray(files.sourceFiles.size());
-            for (File file : files.sourceFiles) {
+            JsonArray array = new JsonArray(module.sourceFiles.size());
+            for (SourceFile file : module.sourceFiles) {
                 JsonObject objectFile = new JsonObject();
                 objectFile.addProperty("path", file.path.toString());
                 JsonArray classArray = new JsonArray();
                 file.classes.forEach(classArray::add);
                 objectFile.add("classes", classArray);
                 JsonArray importArray = new JsonArray();
-                file.imports.forEach(classArray::add);
+                file.imports.forEach(importArray::add);
                 objectFile.add("imports", importArray);
                 array.add(objectFile);
             }

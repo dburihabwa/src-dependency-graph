@@ -10,12 +10,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class File {
+public class SourceFile {
     public final Path path;
     public final List<String> classes;
     public final List<String> imports;
 
-    public File(Path path, List<String> classes, List<String> imports) {
+    public SourceFile(Path path, List<String> classes, List<String> imports) {
         this.path = path;
         this.classes = Collections.unmodifiableList(classes);
         this.imports = Collections.unmodifiableList(imports);

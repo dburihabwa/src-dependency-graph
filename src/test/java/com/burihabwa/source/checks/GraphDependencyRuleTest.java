@@ -28,7 +28,7 @@ class GraphDependencyRuleTest {
         GraphDependencyRule check = new GraphDependencyRule(tempDir);
         InternalCheckVerifier.newInstance()
                 .onFiles(
-                        "src/main/java/com/burihabwa/source/graph/File.java",
+                        "src/main/java/com/burihabwa/source/graph/SourceFile.java",
                         "src/main/java/com/burihabwa/source/checks/GraphDependencyRule.java",
                         "src/test/resources/simple/Simple.java"
                 ).withCheck(check)
