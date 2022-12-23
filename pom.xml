@@ -22,10 +22,10 @@
   </parent>
 
 
-  <artifactId>java-custom-rules-example</artifactId>
+  <artifactId>src-dependency-graph</artifactId>
   <packaging>sonar-plugin</packaging>
 
-  <name>SonarQube Java :: Documentation :: Custom Rules Example</name>
+  <name>src-dependency-graph</name>
   <description>Java Custom Rules Example for SonarQube</description>
 
   <dependencies>
