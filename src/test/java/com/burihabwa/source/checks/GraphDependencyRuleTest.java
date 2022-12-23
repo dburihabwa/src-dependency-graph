@@ -12,6 +12,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.sonar.java.checks.verifier.internal.InternalCheckVerifier;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -52,6 +53,24 @@ class GraphDependencyRuleTest {
         String actual, expected;
         try (InputStream actualIn = new FileInputStream(check.computePathToModuleGraph().toFile());
              InputStream expectedIn = new FileInputStream("src/test/resources/static-imports/module-graph.json")) {
+            actual = new String(actualIn.readAllBytes(), Charset.defaultCharset());
+            expected = new String(expectedIn.readAllBytes(), Charset.defaultCharset());
+        }
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void import_of_symbols_from_packages_are_listed() throws IOException {
+        GraphDependencyRule check = new GraphDependencyRule(Path.of(tempDir.toString()));
+        InternalCheckVerifier.newInstance()
+                .onFiles(
+                        "src/test/resources/inheritance/Child.java",
+                        "src/test/resources/inheritance/Base.java"
+                ).withCheck(check)
+                .verifyNoIssues();
+        String actual, expected;
+        try (InputStream actualIn = new FileInputStream(check.computePathToModuleGraph().toFile());
+             InputStream expectedIn = new FileInputStream("src/test/resources/inheritance/module-graph.json")) {
             actual = new String(actualIn.readAllBytes(), Charset.defaultCharset());
             expected = new String(expectedIn.readAllBytes(), Charset.defaultCharset());
         }

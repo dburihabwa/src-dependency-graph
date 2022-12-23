@@ -1,0 +1,1 @@
+{"files":[{"path":"src/test/resources/inheritance/Child.java","classes":["org.example.inheritance.Child"],"imports":["org.example.inheritance.Base"]},{"path":"src/test/resources/inheritance/Base.java","classes":["org.example.inheritance.Base"],"imports":[]}]}

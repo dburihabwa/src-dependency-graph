@@ -14,6 +14,7 @@ import org.sonar.plugins.java.api.InputFileScannerContext;
 import org.sonar.plugins.java.api.IssuableSubscriptionVisitor;
 import org.sonar.plugins.java.api.ModuleScannerContext;
 import org.sonar.plugins.java.api.internal.EndOfAnalysis;
+import org.sonar.plugins.java.api.semantic.Type;
 import org.sonar.plugins.java.api.tree.*;
 
 import java.io.FileOutputStream;
@@ -70,6 +71,7 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
                 .map(clause -> ((ImportTree) clause).qualifiedIdentifier())
                 .map(GraphDependencyRule::concatenate)
                 .collect(Collectors.toList());
+        imports.addAll(visitor.imports);
         files.add(new SourceFile(path, visitor.classes, imports));
     }
 
@@ -115,11 +117,26 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
 
     private static class CutVisitor extends BaseTreeVisitor {
         private final List<String> classes = new ArrayList<>();
+        private final List<String> imports = new ArrayList<>();
 
         @Override
         public void visitClass(ClassTree tree) {
-            String fqdn = tree.symbol().type().fullyQualifiedName();
+            Type type = tree.symbol().type();
+            String fqdn = type.fullyQualifiedName();
             classes.add(fqdn);
+            Type superClass = tree.symbol().superClass();
+            if (superClass != null) {
+                if (superClass.isUnknown()) {
+                    String packageName = fqdn.substring(0, fqdn.length() - type.name().length());
+                    String constructedSuperTypeName = packageName + superClass.name();
+                    imports.add(constructedSuperTypeName);
+                } else {
+                    String qualifiedName = superClass.fullyQualifiedName();
+                    if (!qualifiedName.startsWith("java.") && !qualifiedName.startsWith("javax.")) {
+                        imports.add(qualifiedName);
+                    }
+                }
+            }
             super.visitClass(tree);
         }
     }
