@@ -6,6 +6,7 @@ package com.burihabwa.source.graph;
 
 import com.google.gson.*;
 
+import javax.annotation.CheckForNull;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -13,6 +14,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class Module {
     private List<SourceFile> sourceFiles;
@@ -37,6 +41,33 @@ public class Module {
             convertedSourceFiles.add(file);
         });
         return new Module(convertedSourceFiles);
+    }
+
+    public List<SourceFile> getSourceFilesImpactedByChangeOf(Path changed) {
+        SourceFile changedFile = getSourceFile(changed);
+        if (changedFile == null) {
+            throw new IllegalArgumentException(String.format("Path to source file cannot be found in source set (%s).", changed));
+        }
+        Set<String> impactedTypes = changedFile.classes.stream().collect(Collectors.toUnmodifiableSet());
+        return sourceFiles.parallelStream()
+                .filter(sourceFile -> importsImpactedType(sourceFile, impactedTypes))
+                .collect(Collectors.toList());
+    }
+
+    private static boolean importsImpactedType(SourceFile sourceFile, Set<String> impactedTypes) {
+        Set<String> imports = sourceFile.imports.stream().collect(Collectors.toSet());
+        imports.retainAll(impactedTypes);
+        return !imports.isEmpty();
+    }
+
+    @CheckForNull
+    private SourceFile getSourceFile(Path path) {
+        for (SourceFile sourceFile : sourceFiles) {
+            if (sourceFile.path.equals(path)) {
+                return sourceFile;
+            }
+        }
+        return null;
     }
 
     @Override
