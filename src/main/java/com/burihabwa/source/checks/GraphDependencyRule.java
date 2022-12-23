@@ -123,34 +123,34 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
             classes.add(fqdn);
             Type superClass = tree.symbol().superClass();
             if (superClass != null) {
-                convertSuperType(type, superClass).ifPresent(parentTypeAsString -> imports.add(parentTypeAsString));
+                convertSuperType(type, superClass).ifPresent(imports::add);
             }
             tree.superInterfaces().stream()
                     .map(TypeTree::symbolType)
                     .map(implementedType -> convertSuperType(type, implementedType))
                     .map(Optional::get)
-                    .forEach(interfaceTypeAsString -> imports.add(interfaceTypeAsString));
+                    .forEach(imports::add);
 
             super.visitClass(tree);
         }
-    }
 
-    private static Optional<String> convertSuperType(Type type, Type superClass) {
-        String fqdn = type.fullyQualifiedName();
-        if (superClass.isUnknown()) {
-            String packageName = fqdn.substring(0, fqdn.length() - type.name().length());
-            return Optional.of(packageName + superClass.name());
-        } else {
-            String qualifiedName = superClass.fullyQualifiedName();
-            if (!qualifiedName.startsWith("java.") && !qualifiedName.startsWith("javax.")) {
-                return Optional.of(qualifiedName);
+        private static Optional<String> convertSuperType(Type type, Type superClass) {
+            String fqdn = type.fullyQualifiedName();
+            if (superClass.isUnknown()) {
+                String packageName = fqdn.substring(0, fqdn.length() - type.name().length());
+                return Optional.of(packageName + superClass.name());
+            } else {
+                String qualifiedName = superClass.fullyQualifiedName();
+                if (!qualifiedName.startsWith("java.") && !qualifiedName.startsWith("javax.")) {
+                    return Optional.of(qualifiedName);
+                }
             }
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     private static Path computePathToFileGraph(InputFileScannerContext inputFileScannerContext) {
-        String key = FILE_FORMAT.format(inputFileScannerContext.getInputFile().key());
+        String key = String.format(FILE_FORMAT, inputFileScannerContext.getInputFile().key());
         return Path.of(key);
     }
 

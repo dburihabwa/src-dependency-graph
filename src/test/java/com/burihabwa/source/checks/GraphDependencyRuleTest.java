@@ -12,7 +12,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.sonar.java.checks.verifier.internal.InternalCheckVerifier;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
