@@ -24,10 +24,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Rule(key = "file-dependency-graph")
@@ -126,19 +123,30 @@ public class GraphDependencyRule extends IssuableSubscriptionVisitor implements 
             classes.add(fqdn);
             Type superClass = tree.symbol().superClass();
             if (superClass != null) {
-                if (superClass.isUnknown()) {
-                    String packageName = fqdn.substring(0, fqdn.length() - type.name().length());
-                    String constructedSuperTypeName = packageName + superClass.name();
-                    imports.add(constructedSuperTypeName);
-                } else {
-                    String qualifiedName = superClass.fullyQualifiedName();
-                    if (!qualifiedName.startsWith("java.") && !qualifiedName.startsWith("javax.")) {
-                        imports.add(qualifiedName);
-                    }
-                }
+                convertSuperType(type, superClass).ifPresent(parentTypeAsString -> imports.add(parentTypeAsString));
             }
+            tree.superInterfaces().stream()
+                    .map(TypeTree::symbolType)
+                    .map(implementedType -> convertSuperType(type, implementedType))
+                    .map(Optional::get)
+                    .forEach(interfaceTypeAsString -> imports.add(interfaceTypeAsString));
+
             super.visitClass(tree);
         }
+    }
+
+    private static Optional<String> convertSuperType(Type type, Type superClass) {
+        String fqdn = type.fullyQualifiedName();
+        if (superClass.isUnknown()) {
+            String packageName = fqdn.substring(0, fqdn.length() - type.name().length());
+            return Optional.of(packageName + superClass.name());
+        } else {
+            String qualifiedName = superClass.fullyQualifiedName();
+            if (!qualifiedName.startsWith("java.") && !qualifiedName.startsWith("javax.")) {
+                return Optional.of(qualifiedName);
+            }
+        }
+        return Optional.empty();
     }
 
     private static Path computePathToFileGraph(InputFileScannerContext inputFileScannerContext) {
