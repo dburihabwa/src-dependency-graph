@@ -11,18 +11,20 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Module {
     private List<SourceFile> sourceFiles;
+    private Map<String, String> classToPath;
 
     public Module(List<SourceFile> sourceFiles) {
         this.sourceFiles = Collections.unmodifiableList(sourceFiles);
+        classToPath = new HashMap<>();
+        sourceFiles.stream().forEach(sourceFile -> {
+            String sourcePath = sourceFile.path.toString();
+            sourceFile.classes.forEach(clazz -> classToPath.put(clazz, sourcePath));
+        });
     }
 
     public static Module of(Path graph) throws IOException {
@@ -83,6 +85,28 @@ public class Module {
             tokens.add(jsonElement.getAsString());
         }
         return tokens;
+    }
+
+    public String toDot() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("digraph module {" + System.lineSeparator());
+        sourceFiles.forEach(sourceFile -> fileToGraphLine(sourceFile, classToPath, builder));
+        builder.append("}" + System.lineSeparator());
+        return builder.toString();
+    }
+
+    private static void fileToGraphLine(SourceFile sourceFile, Map<String, String> classToPath, StringBuilder builder) {
+        String path = sourceFile.path.toString();
+        if (sourceFile.imports.isEmpty()) {
+            builder.append("  \"" + path + "\";" + System.lineSeparator());
+        } else {
+            for (String anImport : sourceFile.imports) {
+                String pathToImport = classToPath.get(anImport);
+                if (pathToImport != null) {
+                    builder.append("  \"" + path + "\" -> \"" + pathToImport + "\";" + System.lineSeparator());
+                }
+            }
+        }
     }
 
     private static class ModuleSerializer implements JsonSerializer<Module> {

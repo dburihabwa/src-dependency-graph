@@ -6,6 +6,9 @@ package com.burihabwa.source.graph;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -65,5 +68,34 @@ class ModuleTest {
         assertThat(impactedSourceFiles)
                 .hasSize(1)
                 .containsExactly(secondFile);
+    }
+
+    @Test
+    void returns_a_dot_representation_with_a_single_file() throws IOException {
+        Path directory = Path.of("src", "test", "resources", "dot");
+        Path expected = directory.resolve("single-file.dot");
+        SourceFile sourceFile = new SourceFile(Path.of("A.java"), List.of("A"), Collections.emptyList());
+
+        Module module = new Module(List.of(sourceFile));
+        String graph = module.toDot();
+
+        try (FileInputStream in = new FileInputStream(expected.toFile())) {
+            assertThat(graph).isEqualToIgnoringNewLines(new String(in.readAllBytes(), Charset.defaultCharset()));
+        }
+    }
+
+    @Test
+    void returns_a_dot_representation_with_multiple_files() throws IOException {
+        Path directory = Path.of("src", "test", "resources", "dot");
+        Path expected = directory.resolve("inheritance-file.dot");
+        SourceFile firstFile = new SourceFile(Path.of("A.java"), List.of("org.example.A"), Collections.emptyList());
+        SourceFile secondFile = new SourceFile(Path.of("B.java"), List.of("org.example.B"), List.of("org.example.A"));
+
+        Module module = new Module(List.of(firstFile, secondFile));
+        String graph = module.toDot();
+
+        try (FileInputStream in = new FileInputStream(expected.toFile())) {
+            assertThat(graph).isEqualToIgnoringNewLines(new String(in.readAllBytes(), Charset.defaultCharset()));
+        }
     }
 }

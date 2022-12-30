@@ -1,0 +1,4 @@
+digraph module {
+  "A.java";
+  "B.java" -> "A.java";
+}
