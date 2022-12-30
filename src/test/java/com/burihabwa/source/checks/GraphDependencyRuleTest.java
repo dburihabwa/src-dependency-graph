@@ -30,13 +30,7 @@ class GraphDependencyRuleTest {
                 .onFile("src/test/resources/simple/Simple.java")
                 .withCheck(check)
                 .verifyNoIssues();
-        String actual, expected;
-        try (InputStream actualIn = new FileInputStream(check.computePathToModuleGraph().toFile());
-             InputStream expectedIn = new FileInputStream("src/test/resources/simple/module-graph.json")) {
-            actual = new String(actualIn.readAllBytes(), Charset.defaultCharset());
-            expected = new String(expectedIn.readAllBytes(), Charset.defaultCharset());
-        }
-        assertThat(actual).isEqualTo(expected);
+        assert_check_builds_expected_graph(check, Path.of("src/test/resources/simple/module-graph.json"));
     }
 
     @Test
@@ -48,14 +42,7 @@ class GraphDependencyRuleTest {
                         "src/test/resources/static-imports/Producer.java"
                 ).withCheck(check)
                 .verifyNoIssues();
-
-        String actual, expected;
-        try (InputStream actualIn = new FileInputStream(check.computePathToModuleGraph().toFile());
-             InputStream expectedIn = new FileInputStream("src/test/resources/static-imports/module-graph.json")) {
-            actual = new String(actualIn.readAllBytes(), Charset.defaultCharset());
-            expected = new String(expectedIn.readAllBytes(), Charset.defaultCharset());
-        }
-        assertThat(actual).isEqualTo(expected);
+        assert_check_builds_expected_graph(check, Path.of("src/test/resources/static-imports/module-graph.json"));
     }
 
     @Test
@@ -67,13 +54,7 @@ class GraphDependencyRuleTest {
                         "src/test/resources/inheritance/Base.java"
                 ).withCheck(check)
                 .verifyNoIssues();
-        String actual, expected;
-        try (InputStream actualIn = new FileInputStream(check.computePathToModuleGraph().toFile());
-             InputStream expectedIn = new FileInputStream("src/test/resources/inheritance/module-graph.json")) {
-            actual = new String(actualIn.readAllBytes(), Charset.defaultCharset());
-            expected = new String(expectedIn.readAllBytes(), Charset.defaultCharset());
-        }
-        assertThat(actual).isEqualTo(expected);
+        assert_check_builds_expected_graph(check, Path.of("src/test/resources/inheritance/module-graph.json"));
     }
 
     @Test
@@ -85,9 +66,13 @@ class GraphDependencyRuleTest {
                         "src/test/resources/implementation/Implementor.java"
                 ).withCheck(check)
                 .verifyNoIssues();
+        assert_check_builds_expected_graph(check, Path.of("src/test/resources/implementation/module-graph.json"));
+    }
+
+    private static void assert_check_builds_expected_graph(GraphDependencyRule check, Path pathToExpectedOutput) throws IOException {
         String actual, expected;
         try (InputStream actualIn = new FileInputStream(check.computePathToModuleGraph().toFile());
-             InputStream expectedIn = new FileInputStream("src/test/resources/implementation/module-graph.json")) {
+             InputStream expectedIn = new FileInputStream(pathToExpectedOutput.toFile())) {
             actual = new String(actualIn.readAllBytes(), Charset.defaultCharset());
             expected = new String(expectedIn.readAllBytes(), Charset.defaultCharset());
         }
