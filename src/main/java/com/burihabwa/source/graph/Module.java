@@ -30,11 +30,19 @@ public class Module {
     public static Module of(Path graph) throws IOException {
         Gson gson = new Gson();
         JsonObject object;
-        List<SourceFile> convertedSourceFiles = new ArrayList<>();
         try (FileReader reader = new FileReader(graph.toFile())) {
             object = gson.fromJson(reader, JsonObject.class);
         }
+        return from(object);
+    }
+
+    public static Module of(String json) {
+        return Module.from(new Gson().fromJson(json, (Type) JsonObject.class));
+    }
+
+    private static Module from(JsonObject object) {
         JsonArray fileElements = object.getAsJsonArray("files");
+        List<SourceFile> convertedSourceFiles = new ArrayList<>();
         fileElements.forEach(element -> {
             Path path = Path.of(element.getAsJsonObject().get("path").getAsString());
             List<String> classes = parseStringArray(element.getAsJsonObject().get("classes").getAsJsonArray());

@@ -7,6 +7,7 @@ package com.burihabwa.source.graph;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ModuleTest {
     @Test
-    void loads_module_from_graph() throws IOException {
+    void loads_module_from_file_and_dumps_expected() throws IOException {
         Path path = Path.of("src", "test", "resources", "simple", "module-graph.json");
         Module module = Module.of(path);
         String moduleToString = module.toString();
@@ -27,6 +28,18 @@ class ModuleTest {
             expected = new String(in.readAllBytes(), Charset.defaultCharset());
         }
         assertThat(moduleToString).isEqualTo(expected);
+    }
+
+    @Test
+    void loads_module_from_string() throws IOException {
+        Path path = Path.of("src", "test", "resources", "simple", "module-graph.json");
+        String input;
+        try (FileInputStream in = new FileInputStream(path.toFile())) {
+            input = new String(in.readAllBytes(), Charset.defaultCharset());
+        }
+        Module module = Module.of(input);
+
+        assertThat(module.toString()).isEqualTo(input);
     }
 
     @Test
