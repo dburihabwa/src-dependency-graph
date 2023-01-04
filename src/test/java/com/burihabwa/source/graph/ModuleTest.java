@@ -18,6 +18,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ModuleTest {
     @Test
+    void loads_module_from_graph() throws IOException {
+        Path path = Path.of("src", "test", "resources", "simple", "module-graph.json");
+        Module module = Module.of(path);
+        String moduleToString = module.toString();
+        String expected;
+        try (FileInputStream in = new FileInputStream(path.toFile())) {
+            expected = new String(in.readAllBytes(), Charset.defaultCharset());
+        }
+        assertThat(moduleToString).isEqualTo(expected);
+    }
+
+    @Test
     void throws_an_IllegalArgumentException_when_source_file_cannot_be_found() {
         Module module = new Module(Collections.emptyList());
         IllegalArgumentException exception = assertThrows(
